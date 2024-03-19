@@ -3,7 +3,9 @@ library(worldfootballR)
 library(tidyverse)
 
 
-# Get the data for 7 leagues in season 2023/24
+##Get the data for 7 leagues in season 2023/24
+
+# standard stats
 d <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
                           gender = "M", 
                           season_end_year = 2024, 
@@ -56,30 +58,38 @@ d_keeper_adv <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ES
 
 ## Create new variables that are required to calculate metrics for the plot
 
-# append new variable that adds middle and attacking third touches to the main data frame
+# create new variable that adds middle and attacking third touches to the main data frame
 d$mid_att_touches_opponent <- d_possession$`Mid 3rd_Touches` + d_possession$`Att 3rd_Touches`
 
-# append opponent offside to the main data frame
+# create opponent offside to the main data frame
 d$offsides_opponent <- d_misc$Off
 
-# append opponent through balls to the main data frame
+# create opponent through balls to the main data frame
 d$through_balls_opponent <- d_passing_types$TB_Pass_Types
 
-# append defensive actions of goalkeepers outside of the box
+# create defensive actions of goalkeepers outside of the box
 d$goalkeeper_outBox <- d_keeper_adv$`#OPA_Sweeper`
 
-# append passes into final third made by opponent
+# create passes into final third made by opponent
 d$final_third_passes_opponent <- d_passing$Final_Third
 
-# append goalkeeper passes longer than 40 yards (it's measured in %)
+# create goalkeeper passes longer than 40 yards (it's measured in %)
 d$launch <- d_keeper_adv$Att_Launched/ (d_keeper_adv$Att_Goal_Kicks + d_keeper_adv$`Att (GK)_Passes`)
 
-# append press resistance variable 
+# create press resistance variable 
 d$tackles_def_mid_opponent <- d_defense$`Def 3rd_Tackles` + d_defense$`Mid 3rd_Tackles`
 d$touches_def_mid <- d_possession$`Def 3rd_Touches` + d_possession$`Mid 3rd_Touches`
 
-# append central progression variable
+# create central progression variable
 d$central_progression <- (d_passing_types$Crs_Pass_Types/ d_passing_types$Live_Pass_Types) * 100
+
+# create circulate variable
+d$circulate <- (d_possession$PrgDist_Carries + d_passing$PrgDist_Total) / d_passing$TotDist_Total
+
+# create variable touches in final third
+d$touches_final <- d_possession$`Att 3rd_Touches`
+
+
 
 
 # subset stats for each team
@@ -89,6 +99,8 @@ d_for <- d %>%
 d_against <- d %>%
   subset(Team_or_Opponent == 'opponent')
 
+## Create new variables that are required to calculate metrics for the plot (split for/against required)
+
 # calculate a variable 'High Line'. it's a sum of conceded offsides, throught balls and goalkeeper actions outside of the box devided by all opponent passes into the final third
 d_against$high_line <- (d_against$offsides_opponent + 
                         d_against$through_balls_opponent + 
@@ -96,6 +108,9 @@ d_against$high_line <- (d_against$offsides_opponent +
 
 # append press resistance variable 
 d_for$press_resistance <- d_for$touches_def_mid / d_against$tackles_def_mid_opponent
+
+# create variable field tilt
+d_for$field_tilt <- (d_for$touches_final / (d_for$touches_final + d_against$touches_final)) * 100
 
 ### Defense
 ## Chance prevention
@@ -127,7 +142,15 @@ d_for$possession <- sapply(d_for$Poss, function(x) ecdf_possession(x) * 100) # A
 
 
 ### Progression
-## central progression 
+## Central progression 
 ecdf_central_progression <- ecdf(d_for$central_progression)  # Create the ECDF based on npxG
 d_for$central_progression_percentile <- sapply(d_for$central_progression, function(x) (1 - ecdf_central_progression(x)) * 100) # Apply ECDF to each X value to get percentiles
+
+## Circulate
+ecdf_circulate <- ecdf(d_for$circulate)  # Create the ECDF based on npxG
+d_for$circulate_percentile <- sapply(d_for$circulate, function(x) (1 - ecdf_circulate(x)) * 100) # Apply ECDF to each X value to get percentiles
+
+## Field tilt
+ecdf_field_tilt <- ecdf(d_for$field_tilt)  # Create the ECDF based on npxG
+d_for$field_tilt_percentile <- sapply(d_for$field_tilt, function(x) ecdf_field_tilt(x) * 100) # Apply ECDF to each X value to get percentiles
 
