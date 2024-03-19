@@ -17,8 +17,54 @@ d_possession <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ES
                                    tier = "1st", 
                                    stat_type = c('possession'))
 
-# add new variable that adds middle and attacking third touches to the main data frame
+# get the miscellaneous data
+d_misc <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                                     gender = "M", 
+                                     season_end_year = 2024, 
+                                     tier = "1st", 
+                                     stat_type = c('misc'))
+
+# get the passing type data
+d_passing_types <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                               gender = "M", 
+                               season_end_year = 2024, 
+                               tier = "1st", 
+                               stat_type = c('passing_types'))
+
+# get the passing data
+d_passing <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                                        gender = "M", 
+                                        season_end_year = 2024, 
+                                        tier = "1st", 
+                                        stat_type = c('passing'))
+
+# get the advanced goalkeeping data
+d_keeper_adv <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                                        gender = "M", 
+                                        season_end_year = 2024, 
+                                        tier = "1st", 
+                                        stat_type = c('keeper_adv'))
+
+
+
+
+
+# append new variable that adds middle and attacking third touches to the main data frame
 d$mid_att_touches_opponent <- d_possession$`Mid 3rd_Touches` + d_possession$`Att 3rd_Touches`
+
+# append opponent offside to the main data frame
+d$offsides_opponent <- d_misc$Off
+
+# append opponent through balls to the main data frame
+d$through_balls_opponent <- d_passing_types$TB_Pass_Types
+
+# append defensive actions of goalkeepers outside of the box
+d$goalkeeper_outBox <- d_keeper_adv$`#OPA_Sweeper`
+
+# append passes into final third made by opponent
+d$final_third_passes_opponent <- d_passing$Final_Third
+
+
 
 
 # subset stats for each team
@@ -28,6 +74,10 @@ d_for <- d %>%
 d_against <- d %>%
   subset(Team_or_Opponent == 'opponent')
 
+# calculate a variable 'High Line'. it's a sum of conceded offsides, throught balls and goalkeeper actions outside of the box devided by all opponent passes into the final third
+d_against$high_line <- (d_against$offsides_opponent + 
+                        d_against$through_balls_opponent + 
+                        d_for$goalkeeper_outBox) / d_against$final_third_passes_opponent
 
 ### Defense
 ## Chance prevention
@@ -39,6 +89,9 @@ d_against$chance_prevention <- sapply(d_against$npxG_Expected, function(x) (1 - 
 ecdf_intensity <- ecdf(d_against$mid_att_touches_opponent)  # Create the ECDF based on npxG
 d_against$intensity <- sapply(d_against$mid_att_touches_opponent, function(x) (1 - ecdf_intensity(x)) * 100) # Apply ECDF to each X value to get percentiles
 
-
+## High Line
+# Calucalte the percentile ranks
+ecdf_high_line <- ecdf(d_against$high_line)  # Create the ECDF based on npxG
+d_against$high_line_percentile <- sapply(d_against$high_line, function(x) ecdf_high_line(x) * 100) # Apply ECDF to each X value to get percentiles
 
 
