@@ -24,6 +24,13 @@ d_misc <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "P
                                      tier = "1st", 
                                      stat_type = c('misc'))
 
+# get the defensive action data
+d_defense <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                               gender = "M", 
+                               season_end_year = 2024, 
+                               tier = "1st", 
+                               stat_type = c('defense'))
+
 # get the passing type data
 d_passing_types <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
                                gender = "M", 
@@ -67,6 +74,9 @@ d$final_third_passes_opponent <- d_passing$Final_Third
 # append goalkeeper passes longer than 40 yards (it's measured in %)
 d$launch <- d_keeper_adv$Att_Launched/ (d_keeper_adv$Att_Goal_Kicks + d_keeper_adv$`Att (GK)_Passes`)
 
+# append press resistance variable 
+d$tackles_def_mid_opponent <- d_defense$`Def 3rd_Tackles` + d_defense$`Mid 3rd_Tackles`
+d$touches_def_mid <- d_possession$`Def 3rd_Touches` + d_possession$`Mid 3rd_Touches`
 
 # subset stats for each team
 d_for <- d %>%
@@ -79,6 +89,9 @@ d_against <- d %>%
 d_against$high_line <- (d_against$offsides_opponent + 
                         d_against$through_balls_opponent + 
                         d_for$goalkeeper_outBox) / d_against$final_third_passes_opponent
+
+# append press resistance variable 
+d_for$press_resistance <- d_for$touches_def_mid / d_against$tackles_mid_attack_opponent
 
 ### Defense
 ## Chance prevention
@@ -100,3 +113,10 @@ d_against$high_line_percentile <- sapply(d_against$high_line, function(x) ecdf_h
 ecdf_deep_buildup <- ecdf(d_for$launch)  # Create the ECDF based on npxG
 d_for$deep_buildup <- sapply(d_for$launch, function(x) (1 - ecdf_deep_buildup(x)) * 100) # Apply ECDF to each X value to get percentiles
 
+## Press resistance
+ecdf_press_resistance <- ecdf(d_for$press_resistance)  # Create the ECDF based on npxG
+d_for$press_resistance_percentile <- sapply(d_for$press_resistance, function(x) ecdf_press_resistance(x) * 100) # Apply ECDF to each X value to get percentiles
+
+## Possesion
+ecdf_possession <- ecdf(d_for$Poss)  # Create the ECDF based on npxG
+d_for$possession <- sapply(d_for$Poss, function(x) ecdf_possession(x) * 100) # Apply ECDF to each X value to get percentiles
