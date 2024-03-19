@@ -47,7 +47,7 @@ d_keeper_adv <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ES
 
 
 
-
+## Create new variables that are required to calculate metrics for the plot
 
 # append new variable that adds middle and attacking third touches to the main data frame
 d$mid_att_touches_opponent <- d_possession$`Mid 3rd_Touches` + d_possession$`Att 3rd_Touches`
@@ -64,7 +64,8 @@ d$goalkeeper_outBox <- d_keeper_adv$`#OPA_Sweeper`
 # append passes into final third made by opponent
 d$final_third_passes_opponent <- d_passing$Final_Third
 
-
+# append goalkeeper passes longer than 40 yards (it's measured in %)
+d$launch <- d_keeper_adv$Att_Launched/ (d_keeper_adv$Att_Goal_Kicks + d_keeper_adv$`Att (GK)_Passes`)
 
 
 # subset stats for each team
@@ -94,4 +95,8 @@ d_against$intensity <- sapply(d_against$mid_att_touches_opponent, function(x) (1
 ecdf_high_line <- ecdf(d_against$high_line)  # Create the ECDF based on npxG
 d_against$high_line_percentile <- sapply(d_against$high_line, function(x) ecdf_high_line(x) * 100) # Apply ECDF to each X value to get percentiles
 
+### Possession
+## Deep build-up
+ecdf_deep_buildup <- ecdf(d_for$launch)  # Create the ECDF based on npxG
+d_for$deep_buildup <- sapply(d_for$launch, function(x) (1 - ecdf_deep_buildup(x)) * 100) # Apply ECDF to each X value to get percentiles
 
