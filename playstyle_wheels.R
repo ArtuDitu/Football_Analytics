@@ -78,6 +78,10 @@ d$launch <- d_keeper_adv$Att_Launched/ (d_keeper_adv$Att_Goal_Kicks + d_keeper_a
 d$tackles_def_mid_opponent <- d_defense$`Def 3rd_Tackles` + d_defense$`Mid 3rd_Tackles`
 d$touches_def_mid <- d_possession$`Def 3rd_Touches` + d_possession$`Mid 3rd_Touches`
 
+# append central progression variable
+d$central_progression <- (d_passing_types$Crs_Pass_Types/ d_passing_types$Live_Pass_Types) * 100
+
+
 # subset stats for each team
 d_for <- d %>%
   subset(Team_or_Opponent == 'team')
@@ -91,7 +95,7 @@ d_against$high_line <- (d_against$offsides_opponent +
                         d_for$goalkeeper_outBox) / d_against$final_third_passes_opponent
 
 # append press resistance variable 
-d_for$press_resistance <- d_for$touches_def_mid / d_against$tackles_mid_attack_opponent
+d_for$press_resistance <- d_for$touches_def_mid / d_against$tackles_def_mid_opponent
 
 ### Defense
 ## Chance prevention
@@ -117,6 +121,13 @@ d_for$deep_buildup <- sapply(d_for$launch, function(x) (1 - ecdf_deep_buildup(x)
 ecdf_press_resistance <- ecdf(d_for$press_resistance)  # Create the ECDF based on npxG
 d_for$press_resistance_percentile <- sapply(d_for$press_resistance, function(x) ecdf_press_resistance(x) * 100) # Apply ECDF to each X value to get percentiles
 
-## Possesion
+## Possession
 ecdf_possession <- ecdf(d_for$Poss)  # Create the ECDF based on npxG
 d_for$possession <- sapply(d_for$Poss, function(x) ecdf_possession(x) * 100) # Apply ECDF to each X value to get percentiles
+
+
+### Progression
+## central progression 
+ecdf_central_progression <- ecdf(d_for$central_progression)  # Create the ECDF based on npxG
+d_for$central_progression_percentile <- sapply(d_for$central_progression, function(x) (1 - ecdf_central_progression(x)) * 100) # Apply ECDF to each X value to get percentiles
+
