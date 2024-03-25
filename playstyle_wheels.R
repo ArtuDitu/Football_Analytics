@@ -54,6 +54,13 @@ d_keeper_adv <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ES
                                         tier = "1st", 
                                         stat_type = c('keeper_adv'))
 
+# get the shooting data
+d_shooting <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+                                     gender = "M", 
+                                     season_end_year = 2024, 
+                                     tier = "1st", 
+                                     stat_type = c('shooting'))
+
 
 
 ## Create new variables that are required to calculate metrics for the plot
@@ -89,6 +96,11 @@ d$circulate <- (d_possession$PrgDist_Carries + d_passing$PrgDist_Total) / d_pass
 # create variable touches in final third
 d$touches_final <- d_possession$`Att 3rd_Touches`
 
+# create variable for patient attack
+d$patient_attack <- (d_shooting$Sh_Standard / d_possession$`Att 3rd_Touches`) * 100
+
+# create variable for shot quality
+d$shot_quality <- d_shooting$xG_Expected / d_shooting$Sh_Standard
 
 
 
@@ -153,4 +165,32 @@ d_for$circulate_percentile <- sapply(d_for$circulate, function(x) (1 - ecdf_circ
 ## Field tilt
 ecdf_field_tilt <- ecdf(d_for$field_tilt)  # Create the ECDF based on npxG
 d_for$field_tilt_percentile <- sapply(d_for$field_tilt, function(x) ecdf_field_tilt(x) * 100) # Apply ECDF to each X value to get percentiles
+
+### Attack
+## Chance creation
+ecdf_chance_creation <- ecdf(d_for$npxG_Per_Minutes)  # Create the ECDF based on npxG
+d_for$chance_creation <- sapply(d_for$npxG_Per_Minutes, function(x) ecdf_chance_creation(x) * 100) # Apply ECDF to each X value to get percentiles
+
+## Patient attack
+ecdf_patient_attack <- ecdf(d_for$patient_attack)  # Create the ECDF based on npxG
+d_for$patient_attack_percentile <- sapply(d_for$patient_attack, function(x) (1 - ecdf_patient_attack(x)) * 100) # Apply ECDF to each X value to get percentiles
+
+## Shot Quality
+ecdf_shot_quality <- ecdf(d_for$shot_quality)  # Create the ECDF based on npxG
+d_for$shot_quality_percentile <- sapply(d_for$shot_quality, function(x)  ecdf_shot_quality(x) * 100) # Apply ECDF to each X value to get percentiles
+
+
+#### Select only relevant variables for plotting
+
+d_playstyle_for <- d_for %>%
+  select(Competition_Name, Country, Season_End_Year, Squad, Age, deep_buildup, press_resistance_percentile, 
+         possession, central_progression_percentile, circulate_percentile, field_tilt_percentile, 
+         chance_creation, patient_attack_percentile, shot_quality_percentile)
+
+d_playstyle_against <- d_against %>%
+  select(Competition_Name, Country, Season_End_Year, Squad, Age, chance_prevention, intensity, 
+         high_line_percentile)
+
+d_playstyle <- cbind(d_playstyle_for, d_playstyle_against$chance_prevention, d_playstyle_against$intensity,
+                     d_playstyle_against$high_line_percentile)
 
