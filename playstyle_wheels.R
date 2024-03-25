@@ -1,6 +1,8 @@
 # load libraries
 library(worldfootballR)
 library(tidyverse)
+library(fmsb)
+library(ggradar)
 
 
 ##Get the data for 7 leagues in season 2023/24
@@ -193,4 +195,51 @@ d_playstyle_against <- d_against %>%
 
 d_playstyle <- cbind(d_playstyle_for, d_playstyle_against$chance_prevention, d_playstyle_against$intensity,
                      d_playstyle_against$high_line_percentile)
+
+
+# order variables
+d_playstyle <- d_playstyle[c("Competition_Name", "Country", "Season_End_Year", "Squad", "Age", 
+                             "d_playstyle_against$chance_prevention", "d_playstyle_against$intensity", 
+                             "d_playstyle_against$high_line_percentile", "deep_buildup", 
+                             "press_resistance_percentile", "possession", "central_progression_percentile",
+                             "circulate_percentile", "field_tilt_percentile", "chance_creation",
+                             "patient_attack_percentile", "shot_quality_percentile")]
+
+
+#### Radar plot
+
+
+ggradar(d_playstyle[1, 6:17],
+        grid.min = 0, grid.mid = 50, grid.max = 100,
+        fill = TRUE,
+        fill.alpha = 1)
+
+
+
+
+
+
+#data to plot
+# Ensure the dataframe is in the correct format for the radar chart
+data_to_plot <- as.data.frame(rbind(rep(100, 12), rep(0, 12), d_playstyle[1,6:17]))
+
+radarchart(data_to_plot, axistype = 100,
+           pfcol = "#0000FF80",  # Fill color
+           pcol = NA,      # Line color around the filled area
+           pch = NA)
+
+# Transform data to long format
+data_long <- data.frame(names(data_to_plot),t(data_to_plot[3,] ))
+
+ggplot(data_long, aes(x = names.data_to_plot, y = X3)) +
+  geom_polygon(alpha = 0.5) +
+  geom_line(size = 1) +
+  coord_polar() +
+  theme_void()
+
+ggplot(data_long, aes(x = names.data_to_plot., y = X3, group = 1)) +
+  geom_polygon() +  # Remove outline by setting color to NA
+  coord_polar() +
+  theme_void()
+
 
