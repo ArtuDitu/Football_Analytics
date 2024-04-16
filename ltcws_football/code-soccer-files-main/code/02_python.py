@@ -343,3 +343,76 @@ from os import path
 DATA_DIR = '/Users/nathan/code-soccer-files/data'
 path.join(DATA_DIR, 'shots.csv')
 os.path.join(DATA_DIR, 'shots.csv')  # alt if we didn't want to import path
+
+
+
+# Exercises
+def commentary(name, stat):
+    return print(f'{name} with the {stat}')
+
+commentary('Chiese', 'goal')
+
+
+player = 'del piero'
+player.islower()
+
+def is_occonel(name):
+    name = name.lower()
+    name = name.replace("'", "")
+    print(name)
+    return name == 'jack oconnel'
+s
+is_occonel("Jack O'Connel")
+
+def a_lot_of_goals(goals):
+    if goals >=4:
+        return f'{goals} is a lot of goals!'
+    else:
+        return f'{goals} is not that many goals'
+
+a_lot_of_goals(8)
+
+roster = ['ruben dias', 'gabriel jesus', 'riyad mahrez'] 
+roster[0:2]
+roster[:2]
+[player for player in roster if player != 'riyad mahrez' ]
+
+
+shot_info = {'shooter': 'Robert Lewandowski', 'foot': 'right', 'went in': False}
+shot_info['shooter'] = 'Cristiano Ronaldo'
+
+def toggle_foot(dictionary):
+    if dictionary['foot'] == 'right':
+        dictionary['foot'] = 'left'
+    else:
+        dictionary['foot'] = 'right'
+    return dictionary
+
+toggle_foot(shot_info)
+
+
+for player in roster:
+    print(player.split(' ')[0])
+    
+    
+{player: len(player) for player in roster}
+    
+roster_dict = {'CB': 'ruben dias',
+               'CF': 'gabriel jesus',
+               'RW': 'riyad mahrez',
+               'LW': 'raheem sterling'}
+
+
+[position for position, _ in roster_dict.items()]
+
+[player for _, player in roster_dict.items() if player.split(' ')[1].startswith(('j','m'))]
+
+
+def mapper(my_list, my_function):
+    return [my_function(x) for x in my_list]
+
+match_minutes = [95, 92, 91, 91, 97, 95]
+
+mapper(match_minutes, lambda x:x -90)
+
+
