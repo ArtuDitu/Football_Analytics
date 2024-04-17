@@ -5,7 +5,7 @@ from os import path
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 # load player-game data
 pg = pd.read_csv(path.join(DATA_DIR, 'player_match.csv'))
@@ -64,10 +64,9 @@ def is_south_america(team):
 
 pg['is_sa'] = pg['team'].apply(is_south_america)
 
-pg[['name', 'team', 'is_sa']].sample(5)
+pg[['name', 'team', 'is_sa_alternate']].sample(5)
 
-pg['is_sa_alternate'] = pg['team'].apply(lambda x: x in [
-    ['Brazil', 'Uruguay', 'Colombia', 'Argentina', 'Costa Rica', 'Peru']])
+pg['is_sa_alternate'] = pg['team'].apply(lambda x: x in ['Brazil', 'Uruguay', 'Colombia', 'Argentina', 'Costa Rica', 'Peru'])
 
 # Dropping Columns
 pg.drop('is_sa_alternate', axis=1, inplace=True)
@@ -112,3 +111,29 @@ pg[['name', 'team', 'month', 'date']].sample(5)
 pg['month'].astype(int).sample(5)
 
 pg.dtypes.head()
+
+
+### Exercises
+
+pm = pd.read_csv(path.join(DATA_DIR,'player_match.csv'))
+pm['ob_touches'] = pm['throw'] + pm['corner']
+pm['player_desc'] = pm['name'] + ' is the ' + pm['team'] + ' ' + pm['pos']
+pm['at_least_one_throwin'] = pm['throw'] > 0
+pm['len_last_name'] = pm['name'].str.split(' ', expand = True)[1].str.len()
+pm['match_id'] = pm['match_id'].astype(str)
+pm.columns = [x.replace('_','') for x in pm.columns]
+pm = pd.read_csv(path.join(DATA_DIR,'player_match.csv'))
+pm['air_duel_won_percentage'] = pm['air_duel_won']/pm['air_duel']
+pm['air_duel_won_percentage'] = pm['air_duel_won_percentage'].fillna(-99)
+pm.drop('air_duel_won_percentage', axis=1, inplace = True)
+pm.columns
+
+
+
+
+
+
+
+
+
+
