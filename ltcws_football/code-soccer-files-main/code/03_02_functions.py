@@ -1,11 +1,12 @@
 import pandas as pd
+import numpy as np
 from os import path
 
 # change this to the directory where the csv files that come with the book are
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 # load adp data
 pg = pd.read_csv(path.join(DATA_DIR, 'player_match.csv'))
@@ -43,4 +44,32 @@ pg['team'].value_counts()
 
 pg['team'].value_counts(normalize=True)
 
-pd.crosstab(pg['team'], pg['pos']).head()
+pd.crosstab(pg['team'], pg['pos'])
+
+### Exercises
+pm = pd.read_csv(path.join(DATA_DIR, 'player_match.csv'))
+pm['named_pass1'] = pm['clearance'] + pm['cross'] + pm['assist'] + pm['keypass']
+pm['named_pass2'] = pm[['clearance', 'cross', 'assist', 'keypass']].sum(axis = 1)
+
+(pm['named_pass1'] == pm['named_pass2']).all()
+
+pm[['shot', 'assist', 'pass']].mean()
+((pm['goal'] > 0) & (pm['assist'] > 0)).sum()
+
+((pm['goal'] > 0) & (pm['assist'] > 0)).sum()/pm.shape[0]
+
+pm['own_goal'].sum()
+
+pm['pos'].value_counts()
+
+
+
+
+
+
+
+
+
+
+
+
