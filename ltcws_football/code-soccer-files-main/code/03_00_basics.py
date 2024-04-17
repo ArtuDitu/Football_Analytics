@@ -5,7 +5,7 @@ import pandas as pd
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 ##############
 # Loading data
@@ -38,7 +38,7 @@ type(shots['name'].to_frame().head())
 shots[['name', 'foot', 'goal', 'period']].head()
 
 type(shots[['name', 'foot', 'goal', 'period']])
-
+    
 # commented out because it throws an error
 # shots['name', 'foot', 'goal', 'period'].head() 
 
@@ -87,4 +87,24 @@ shots['foot'].head()
 shots_ot.to_csv(path.join(DATA_DIR, 'shots_ot.csv'))
 
 shots_ot.to_csv(path.join(DATA_DIR, 'shots_ot_no_index.csv'), index=False)
+
+
+### Exercises
+match = pd.read_csv(path.join(DATA_DIR, 'matches.csv'))
+match10 = match.sort_values('date').head(10)
+match.sort_values(by = 'label', ascending = False, inplace = True)
+
+type(match.sort_values('label'))
+
+match_simple = match[['date', 'home_team', 'away_team', 'home_score','away_score']]
+match_simple = match_simple[['home_team', 'away_team', 'date', 'home_score', 'away_score']]
+
+match_simple['match_id'] = match['match_id']
+match_simple.to_csv(path.join(DATA_DIR, 'match_simple.txt'), sep = '|' )
+
+ 
+
+
+
+
 
