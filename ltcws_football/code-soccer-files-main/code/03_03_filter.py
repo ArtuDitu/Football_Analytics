@@ -6,7 +6,7 @@ from os import path
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 # note: we're passing the index_col argument, which immediately setting the
 # index to be the player_id column
@@ -71,3 +71,48 @@ dfm.query("group.isnull()")[['label', 'group', 'venue']].head()
 # note: if getting an error on line above, try it with engine='python' like
 # this
 dfm.query("group.isnull()", engine='python')[['label', 'group', 'venue']].head()
+
+
+
+# Exercises
+
+dfp = pd.read_csv(path.join(DATA_DIR, 'players.csv'))
+dfp_bra1 = dfp.loc[dfp['team'] == 'Brazil', ['player_name', 'pos', 'foot', 'weight', 'height']]
+dfp_bra2 = dfp.query("team == 'Brazil'")[['player_name', 'pos', 'foot', 'weight', 'height']]
+dfp_no_bra = dfp.loc[dfp['team'] != 'Brazil', ['player_name', 'pos', 
+                                               'foot', 'weight', 'height', 'team']]
+
+dfp['bday'] = dfp['birth_date'].astype(str).str[-4:].astype(int)
+
+dfp['bday'].duplicated()
+
+dfp_dups = dfp
+dfp_nodups =dfp.drop_duplicates(subset = 'bday')
+
+dfp['height_description'] = np.nan
+dfp.loc[dfp['height'] > 195, 'height_description'] = 'tall'
+dfp.loc[dfp['height'] < 175, 'height_description'] = 'short'
+
+dfp_no_desc1 = dfp.loc[dfp['height_description'].isna()]
+dfp_no_desc2 = dfp.query("height_description.isna()")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_dup
+
+
+
+
