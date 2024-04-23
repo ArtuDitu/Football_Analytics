@@ -5,7 +5,7 @@ from os import path
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 shots = pd.read_csv(path.join(DATA_DIR, 'shots.csv'))  # shot data
 
@@ -58,3 +58,47 @@ fd_reshaped.idxmax(axis=1).value_counts()
 
 fd_reshaped_undo = fd_reshaped.stack()
 fd_reshaped_undo.head()
+
+
+
+# exercises
+
+dfpm = pd.read_csv(path.join(DATA_DIR, 'player_match.csv'))
+
+dfpm_shots = dfpm.groupby(['name']).agg({
+    'shot': 'mean',
+    'goal': 'mean'})
+
+(dfpm_shots['shot'] >= 4).mean()
+
+
+dftm = dfpm.groupby(['team', 'match_id']).agg(
+    total_goals = ('goal', 'sum'),
+    total_passes = ('pass', 'sum'),
+    total_shot = ('shot', 'sum'),
+    nplayed = ('player_id', 'count'))
+dftm.head()
+
+dftm.reset_index(inplace=True)
+dftm['no_goals'] =  [goals < 1 for goals in dftm['total_goals']]
+dftm.groupby('no_goals')['total_shot', 'total_passes'].mean()
+
+
+dftm.groupby('match_id').count()
+dftm.groupby('match_id').sum()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
