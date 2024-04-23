@@ -5,7 +5,7 @@ from os import path
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 pg = pd.read_csv(path.join(DATA_DIR, 'player_match.csv'))  # player-game
 games = pd.read_csv(path.join(DATA_DIR, 'matches.csv'))  # game info
@@ -121,3 +121,51 @@ mids_reset.head()
 pd.concat([mids_reset, fwds_reset]).sort_index().head()
 
 pd.concat([mids_reset, fwds_reset], ignore_index=True).sort_index().head()
+
+# Exercises
+
+DATA_DIR_Problems = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/problems/combine1/'
+
+d_name = pd.read_csv(path.join(DATA_DIR_Problems, 'name.csv'))
+d_ob = pd.read_csv(path.join(DATA_DIR_Problems, 'ob.csv'))
+d_pass = pd.read_csv(path.join(DATA_DIR_Problems, 'pass.csv'))
+d_shot = pd.read_csv(path.join(DATA_DIR_Problems, 'shot.csv'))
+
+
+df_comb1 = pd.merge(d_name, d_ob, how = 'left')
+df_comb1 = pd.merge(df_comb1, d_pass, how = 'left')
+df_comb1 = pd.merge(df_comb1, d_shot, how = 'left')
+df_comb1 = df_comb1.fillna(0)
+
+
+df_comb2 = pd.concat([d_name.set_index(['player_id', 'match_id']),
+                     d_ob.set_index(['player_id', 'match_id']),
+                     d_pass.set_index(['player_id', 'match_id']),
+                     d_shot.set_index(['player_id', 'match_id'])],
+                     join = 'outer', axis = 1)
+
+df_comb2 = df_comb2.fillna(0)
+
+DATA_DIR_Problems2 = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/problems/combine2/'
+
+d_def = pd.read_csv(path.join(DATA_DIR_Problems2,'def.csv'))
+d_fwd = pd.read_csv(path.join(DATA_DIR_Problems2,'fwd.csv'))
+d_mid = pd.read_csv(path.join(DATA_DIR_Problems2,'mid.csv'))
+
+d_comb = pd.concat([d_def, d_fwd,d_mid], ignore_index=True)
+
+d_teams = pd.read_csv(path.join(DATA_DIR, 'teams.csv'))
+
+groups = ['A', 'B', 'C', 'D', 'E', 'F','G','H']
+
+for group in groups:
+    (d_teams.query(f"grouping == '{group}'")).to_csv(path.join(DATA_DIR, f"d_teams_{group}.csv"), 
+                                                     index = False)
+    
+
+df_combined = pd.concat([pd.read_csv(path.join(DATA_DIR, f'd_teams_{group}.csv')) for group in groups], ignore_index=True)
+
+
+
+
+
