@@ -209,40 +209,49 @@ names(d_playstyle) <- c("Competition_Name", "Country", "Season_End_Year", "Squad
                         'Intensity', 'High_Line', 'Deep_buildup', 'Press_Resistance', 'Possession', 'Central_Progression',
                         'Circulation', 'Field_Tilt', 'Chance_Creation', 'Patient_Attack', 'Shot_Quality')
 
-#### Radar plot
-
-
-ggradar(d_playstyle[1, 6:17],
-        grid.min = 0, grid.mid = 50, grid.max = 100,
-        fill = TRUE,
-        fill.alpha = 0.5)
 
 
 
+### radar plot with ggplot2
+#change data to long
+d_playstale_long <- pivot_longer(
+  d_playstyle,
+  cols = names(d_playstyle)[6:17],    # Selects all columns that start with 'Var'
+  names_to = "Metric",        # New column for variable names
+  values_to = "Value"           # New column for variable values
+) 
+# change matric to factor
+d_playstale_long$Metric <- factor(d_playstale_long$Metric)
+
+d_playstale_long <- d_playstale_long %>%
+  mutate(Category = factor(case_when(
+    Metric %in% c('Chance_Prevention','Intensity', 'High_Line') ~ 'Defensive',
+    Metric %in% c('Deep_buildup', 'Press_Resistance', 'Possession') ~ 'Possesion',
+    Metric %in% c('Central_Progression','Circulation', 'Field_Tilt') ~ 'Progression',
+    Metric %in% c('Chance_Creation', 'Patient_Attack', 'Shot_Quality') ~ 'Attacking',
+    TRUE ~ 'None'
+  )))
+
+
+levels(d_playstale_long$Metric)
 
 
 
-#data to plot
-# Ensure the dataframe is in the correct format for the radar chart
-data_to_plot <- as.data.frame(rbind(rep(100, 12), rep(0, 12), d_playstyle[1,6:17]))
 
-radarchart(data_to_plot, axistype = 100,
-           pfcol = "#0000FF80",  # Fill color
-           pcol = NA,      # Line color around the filled area
-           pch = NA)
 
-# Transform data to long format
-data_long <- data.frame(names(data_to_plot),t(data_to_plot[3,] ))
+# random
 
-ggplot(data_long, aes(x = names.data_to_plot, y = X3)) +
-  geom_polygon(alpha = 0.5) +
-  geom_line(size = 1) +
-  coord_polar() +
-  theme_void()
+d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
+                                                                          'Deep_buildup', 'Press_Resistance', 'Possession',
+                                                                          'Central_Progression','Circulation', 'Field_Tilt',
+                                                                          'Chance_Creation', 'Patient_Attack', 'Shot_Quality'))
 
-ggplot(data_long, aes(x = names.data_to_plot., y = X3, group = 1)) +
-  geom_polygon() +  # Remove outline by setting color to NA
-  coord_polar() +
-  theme_void()
+plt <- ggplot(d_playstale_long[d_playstale_long$Squad == 'Juventus',]) +
+  # Make custom panel grid
+  geom_col(aes(x = Metric, y = Value, color = Category, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
+  # Make it circular!
+  coord_polar()
+
+plt
 
 
