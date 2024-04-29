@@ -28,7 +28,6 @@ rows[2]
 first_data_row = rows[3]
 first_data_row
 
-sdsd
 
 rows = goals_table.find_all('tr')
 
