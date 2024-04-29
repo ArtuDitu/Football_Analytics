@@ -205,6 +205,9 @@ d_playstyle <- d_playstyle[c("Competition_Name", "Country", "Season_End_Year", "
                              "circulate_percentile", "field_tilt_percentile", "chance_creation",
                              "patient_attack_percentile", "shot_quality_percentile")]
 
+names(d_playstyle) <- c("Competition_Name", "Country", "Season_End_Year", "Squad", "Age", 'Chance_Prevention',
+                        'Intensity', 'High_Line', 'Deep_buildup', 'Press_Resistance', 'Possession', 'Central_Progression',
+                        'Circulation', 'Field_Tilt', 'Chance_Creation', 'Patient_Attack', 'Shot_Quality')
 
 #### Radar plot
 
@@ -212,7 +215,7 @@ d_playstyle <- d_playstyle[c("Competition_Name", "Country", "Season_End_Year", "
 ggradar(d_playstyle[1, 6:17],
         grid.min = 0, grid.mid = 50, grid.max = 100,
         fill = TRUE,
-        fill.alpha = 1)
+        fill.alpha = 0.5)
 
 
 
