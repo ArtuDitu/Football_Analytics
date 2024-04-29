@@ -9,7 +9,7 @@ import sqlite3
 # only need to run this section once
 
 # handle directories
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 # create connection
 conn = sqlite3.connect(path.join(DATA_DIR, 'soccer-data.sqlite'))
@@ -42,7 +42,7 @@ df.head()
 # return specific columns from player table + rename on the fly
 df = pd.read_sql(
     """
-    SELECT player_id, player_name AS name, team, pos, foot
+    SELECT player_id, player_name AS name, team, pos AS position, foot
     FROM player
     """, conn)
 df.head()
@@ -65,7 +65,7 @@ df = pd.read_sql(
     """
     SELECT player_id, player_name AS name, team, pos, foot
     FROM player
-    WHERE team = 'Japan' AND pos == 'MID'
+    WHERE team = 'Japan' AND pos = 'MID'
     """, conn)
 df.head()
 
@@ -74,7 +74,7 @@ df = pd.read_sql(
     """
     SELECT player_id, player_name AS name, team, pos, foot
     FROM player
-    WHERE team = 'Japan' OR pos == 'GKP'
+    WHERE team = 'Japan' OR pos = 'GKP'
     """, conn)
 df.head()
 
