@@ -3,6 +3,7 @@ library(worldfootballR)
 library(tidyverse)
 library(fmsb)
 library(ggradar)
+library(extrafont)
 
 
 ##Get the data for 7 leagues in season 2023/24
@@ -223,6 +224,7 @@ d_playstale_long <- pivot_longer(
 # change matric to factor
 d_playstale_long$Metric <- factor(d_playstale_long$Metric)
 
+# add a variable to separate into four categories of different aspects of the game
 d_playstale_long <- d_playstale_long %>%
   mutate(Category = factor(case_when(
     Metric %in% c('Chance_Prevention','Intensity', 'High_Line') ~ 'Defensive',
@@ -233,25 +235,33 @@ d_playstale_long <- d_playstale_long %>%
   )))
 
 
-levels(d_playstale_long$Metric)
 
 
 
-
-
-# random
-
+# reorder levels of metrics so that they are separated into four quadrants 
 d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
                                                                           'Deep_buildup', 'Press_Resistance', 'Possession',
                                                                           'Central_Progression','Circulation', 'Field_Tilt',
                                                                           'Chance_Creation', 'Patient_Attack', 'Shot_Quality'))
 
-plt <- ggplot(d_playstale_long[d_playstale_long$Squad == 'Juventus',]) +
+team_to_plot <- d_playstale_long[d_playstale_long$Squad == 'Juventus',]
+
+plot_playstyle_wheel <- ggplot(team_to_plot) +
   # Make custom panel grid
   geom_col(aes(x = Metric, y = Value, color = Category, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
   # Make it circular!
-  coord_polar()
+  coord_polar() +
+  scale_x_discrete(labels = c('Chance Prevention','Intensity', 'High Line', 'Deep buildup', 'Press Resistance', 
+                          'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
+                          'Patient Attack', 'Shot Quality')) +
+  scale_fill_manual(values = c("firebrick4", "lightsteelblue", "yellow2", 'blue'))+
+  theme(text = element_text(family = "Source Sans Pro"),
+        panel.background = element_rect(fill = "white"),
+        axis.ticks = element_blank(),  
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
 
-plt
+plot_playstyle_wheel
 
 
