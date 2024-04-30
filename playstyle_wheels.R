@@ -244,19 +244,21 @@ d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Pr
                                                                           'Central_Progression','Circulation', 'Field_Tilt',
                                                                           'Chance_Creation', 'Patient_Attack', 'Shot_Quality'))
 
-team_to_plot <- d_playstale_long[d_playstale_long$Squad == 'Juventus',]
+team_to_plot <- d_playstale_long[d_playstale_long$Squad == 'Arsenal',]
 
 plot_playstyle_wheel <- ggplot(team_to_plot) +
   # Make custom panel grid
-  geom_col(aes(x = Metric, y = Value, color = Category, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
+  geom_col(aes(x = Metric, y = Value, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
   # Make it circular!
   coord_polar() +
+  geom_text(aes(x = Metric, y = Value, label = round(Value)), vjust = -0.5, color = "black") +
   scale_x_discrete(labels = c('Chance Prevention','Intensity', 'High Line', 'Deep buildup', 'Press Resistance', 
                           'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                           'Patient Attack', 'Shot Quality')) +
-  scale_fill_manual(values = c("firebrick4", "lightsteelblue", "yellow2", 'blue'))+
-  theme(text = element_text(family = "Source Sans Pro"),
+  scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
+  theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 14),
         panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "black", size = 0.05), # Change major grid lines to black
         axis.ticks = element_blank(),  
         axis.text.y = element_blank(),
         axis.title.x = element_blank(),
