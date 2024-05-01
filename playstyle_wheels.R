@@ -4,63 +4,69 @@ library(tidyverse)
 library(fmsb)
 library(ggradar)
 library(extrafont)
+library(geomtextpath)
+
+# leagues of interest
+list_of_leagues <- c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED")
+
+## function to get the data for 7 leagues in one season and calculate all the metrics
 
 
-##Get the data for 7 leagues in season 2023/24
+get_7leagues <- function(season, list_of_leagues){
 
 # standard stats
-d <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d <- fb_season_team_stats(country = list_of_leagues, 
                           gender = "M", 
-                          season_end_year = 2024, 
+                          season_end_year = season, 
                           tier = "1st", 
                           stat_type = c('standard'))
 
 # get the possession data
-d_possession <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_possession <- fb_season_team_stats(country = list_of_leagues, 
                                    gender = "M", 
-                                   season_end_year = 2024, 
+                                   season_end_year = season, 
                                    tier = "1st", 
                                    stat_type = c('possession'))
 
 # get the miscellaneous data
-d_misc <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_misc <- fb_season_team_stats(country = list_of_leagues, 
                                      gender = "M", 
-                                     season_end_year = 2024, 
+                                     season_end_year = season, 
                                      tier = "1st", 
                                      stat_type = c('misc'))
 
 # get the defensive action data
-d_defense <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_defense <- fb_season_team_stats(country = list_of_leagues, 
                                gender = "M", 
-                               season_end_year = 2024, 
+                               season_end_year = season, 
                                tier = "1st", 
                                stat_type = c('defense'))
 
 # get the passing type data
-d_passing_types <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_passing_types <- fb_season_team_stats(country = list_of_leagues, 
                                gender = "M", 
-                               season_end_year = 2024, 
+                               season_end_year = season, 
                                tier = "1st", 
                                stat_type = c('passing_types'))
 
 # get the passing data
-d_passing <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_passing <- fb_season_team_stats(country = list_of_leagues, 
                                         gender = "M", 
-                                        season_end_year = 2024, 
+                                        season_end_year = season, 
                                         tier = "1st", 
                                         stat_type = c('passing'))
 
 # get the advanced goalkeeping data
-d_keeper_adv <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_keeper_adv <- fb_season_team_stats(country = list_of_leagues, 
                                         gender = "M", 
-                                        season_end_year = 2024, 
+                                        season_end_year = season, 
                                         tier = "1st", 
                                         stat_type = c('keeper_adv'))
 
 # get the shooting data
-d_shooting <- fb_season_team_stats(country = c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED"), 
+d_shooting <- fb_season_team_stats(country = list_of_leagues, 
                                      gender = "M", 
-                                     season_end_year = 2024, 
+                                     season_end_year = season, 
                                      tier = "1st", 
                                      stat_type = c('shooting'))
 
@@ -213,7 +219,7 @@ names(d_playstyle) <- c("Competition_Name", "Country", "Season_End_Year", "Squad
 
 
 
-### radar plot with ggplot2
+
 #change data to long
 d_playstale_long <- pivot_longer(
   d_playstyle,
@@ -221,7 +227,7 @@ d_playstale_long <- pivot_longer(
   names_to = "Metric",        # New column for variable names
   values_to = "Value"           # New column for variable values
 ) 
-# change matric to factor
+# change metric to factor
 d_playstale_long$Metric <- factor(d_playstale_long$Metric)
 
 # add a variable to separate into four categories of different aspects of the game
@@ -234,31 +240,34 @@ d_playstale_long <- d_playstale_long %>%
     TRUE ~ 'None'
   )))
 
-
-
-
-
 # reorder levels of metrics so that they are separated into four quadrants 
 d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
                                                                           'Deep_buildup', 'Press_Resistance', 'Possession',
                                                                           'Central_Progression','Circulation', 'Field_Tilt',
                                                                           'Chance_Creation', 'Patient_Attack', 'Shot_Quality'))
+return(d_playstale_long)
+}
 
-team_to_plot <- d_playstale_long[d_playstale_long$Squad == 'Arsenal',]
+
+d_2324 <- get_7leagues(2024, list_of_leagues)
+
+### radar plot with ggplot2
+team_to_plot <- d_2324[d_2324$Squad == 'Brighton',]
 
 plot_playstyle_wheel <- ggplot(team_to_plot) +
   # Make custom panel grid
   geom_col(aes(x = Metric, y = Value, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
+  geom_vline(xintercept = 1:13 - 0.5, color = "gray90", alpha = 0.5) +
+  geom_hline(yintercept =c(0,25,50,75,100) , color = "gray90", alpha = 0.5) +
   # Make it circular!
-  coord_polar() +
-  geom_text(aes(x = Metric, y = Value, label = round(Value)), vjust = -0.5, color = "black") +
+  coord_curvedpolar() +
+  geom_text(aes(x = Metric, y = Value + 5, label = round(Value)), color = "black", fontface = 'bold') +
   scale_x_discrete(labels = c('Chance Prevention','Intensity', 'High Line', 'Deep buildup', 'Press Resistance', 
                           'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                           'Patient Attack', 'Shot Quality')) +
   scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-  theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 14),
-        panel.background = element_rect(fill = "white"),
-        panel.grid.major = element_line(color = "black", size = 0.05), # Change major grid lines to black
+  theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 16),
+        panel.background = element_blank(),
         axis.ticks = element_blank(),  
         axis.text.y = element_blank(),
         axis.title.x = element_blank(),
