@@ -2,9 +2,10 @@
 library(tidyverse)
 library(extrafont)
 library(shiny)
+library(geomtextpath)
 
 # load data
-d_full <- read_csv('data_playstyle_wheel.csv')
+d_full <- read_csv('data/data_playstyle_wheel.csv')
 # order factors for the plots
 d_full$Metric <- factor(d_full$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
                                                   'Deep_buildup', 'Press_Resistance', 'Possession',
@@ -37,16 +38,17 @@ ui <- fluidPage(
     selectInput("Competition2", "Choose a competition:",
                 choices = NULL),
     selectInput("Team2", "Choose a team:",
-                choices = NULL),
+                choices = NULL), 
+    width = 2
     ),
     mainPanel(
-      fluidRow(
-      column(6, plotOutput("myPlot")),
-      column(6, plotOutput("myPlot2"))# Output: Display interactive plot
+      plotOutput("myPlot", height = "75vh"),
+    div(style = "margin-top: 20px;"),
+    plotOutput("myPlot2", height = "75vh")# Output: Display interactive plot
       )
     )
   )
-)
+
 
 
 server <- function(input, output, session) {
@@ -98,14 +100,18 @@ server <- function(input, output, session) {
                                   'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                                   'Patient Attack', 'Shot Quality')) +
       scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 14),
+      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 15),
             panel.background = element_blank(),
             axis.ticks = element_blank(),  
             axis.text.y = element_blank(),
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
-            plot.title = element_text(hjust = 0.5))
-  })
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "bottom",
+            legend.text=element_text(size=12),
+            legend.title=element_blank())
+  },width = "auto", height = "auto")
+  
   output$myPlot2 <- renderPlot({
     req(input$Year2, input$Competition2, input$Team2)
     team_to_plot <- d_full[d_full$Squad == input$Team2 & d_full$Season_End_Year == input$Year2,]
@@ -123,14 +129,15 @@ server <- function(input, output, session) {
                                   'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                                   'Patient Attack', 'Shot Quality')) +
       scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 14),
+      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 15),
             panel.background = element_blank(),
             axis.ticks = element_blank(),  
             axis.text.y = element_blank(),
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
-            plot.title = element_text(hjust = 0.5))
-  })
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "none")
+  },width = "auto", height = "auto")
 }
 
 

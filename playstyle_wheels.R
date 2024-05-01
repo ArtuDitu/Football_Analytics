@@ -3,6 +3,7 @@ library(worldfootballR)
 library(tidyverse)
 library(extrafont)
 library(shiny)
+library(geomtextpath)
 
 # leagues of interest
 list_of_leagues <- c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED")
@@ -260,6 +261,7 @@ d_full$Season_End_Year <- factor(d_full$Season_End_Year)
 ### radar plot with ggplot2 - example
 team_to_plot <- d_full[d_full$Squad == 'Brighton' & d_full$Season_End_Year == '2024' ,]
 
+
 plot_playstyle_wheel <- ggplot(team_to_plot) +
   # Make custom panel grid
   geom_col(aes(x = Metric, y = Value, fill = Category), position = "dodge2", show.legend = TRUE, alpha = .9) +
@@ -272,18 +274,19 @@ plot_playstyle_wheel <- ggplot(team_to_plot) +
                           'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                           'Patient Attack', 'Shot Quality')) +
   scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-  theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 16),
+  theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 12),
         panel.background = element_blank(),
         axis.ticks = element_blank(),  
         axis.text.y = element_blank(),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank())
+        axis.title.y = element_blank(),
+        legend.position = "bottom")
 
 plot_playstyle_wheel
 
 
 #save the data to csv
-write_csv(d_full, 'data_playstyle_wheel.csv')
+#write_csv(d_full, 'data_playstyle_wheel.csv')
 
 
 
