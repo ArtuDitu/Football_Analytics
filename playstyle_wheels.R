@@ -248,11 +248,16 @@ d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Pr
 return(d_playstale_long)
 }
 
+seasons_to_extract <- 2019:2024
+d_full <- data.frame()
 
-d_2324 <- get_7leagues(2024, list_of_leagues)
+for (season in seasons_to_extract){
+  d_tmp <- get_7leagues(season, list_of_leagues)
+  d_full<-rbind(d_full, d_tmp)
+}
 
-### radar plot with ggplot2
-team_to_plot <- d_2324[d_2324$Squad == 'Brighton',]
+### radar plot with ggplot2 - example
+team_to_plot <- d_full[d_full$Squad == 'Brighton' & d_full$Season_End_Year == 2024 ,]
 
 plot_playstyle_wheel <- ggplot(team_to_plot) +
   # Make custom panel grid
