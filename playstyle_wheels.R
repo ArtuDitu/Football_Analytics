@@ -2,7 +2,6 @@
 library(worldfootballR)
 library(tidyverse)
 library(extrafont)
-library(geomtextpath)
 library(shiny)
 
 # leagues of interest

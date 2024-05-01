@@ -1,3 +1,11 @@
+# load libraries
+library(tidyverse)
+library(extrafont)
+library(shiny)
+
+# load data
+d_full <- read_csv('data_playstyle_wheel.csv')
+
 ### R shiny app
 
 ui <- fluidPage(
