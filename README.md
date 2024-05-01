@@ -16,4 +16,4 @@ The Athletic published their updated playstyle wheels (<https://theathletic.com/
 
 4.  Gather more data for many leagues, teams, seasons.
 
-5.  Build a Shiny App that will allow comparing playing style between seasons, teams, leagues, managers.
+5.  Build a Shiny App that will allow comparing playing style between seasons, leagues, and teams.
