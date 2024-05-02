@@ -1,6 +1,6 @@
 # Football Analytics
 
-In this repo I learn and showcase data analyst skills.
+In this repo I learn and showcase football data analyst skills.
 
 The projects are listed in the chronological order (the current one at the top)
 
