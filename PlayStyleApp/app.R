@@ -18,7 +18,7 @@ d_full$Season_End_Year <- paste(d_full$Season_End_Year - 1, d_full$Season_End_Ye
 ### R shiny app
 
 ui <- fluidPage(
-  titlePanel("Playstyle wheel"),
+  titlePanel("Playstyle wheels"),
   sidebarLayout(
     sidebarPanel(
       tags$h3("Team 1"),
@@ -44,7 +44,8 @@ ui <- fluidPage(
     mainPanel(
       plotOutput("myPlot", height = "75vh"),
     div(style = "margin-top: 20px;"),
-    plotOutput("myPlot2", height = "75vh")# Output: Display interactive plot
+    plotOutput("myPlot2", height = "75vh"), # Output: Display interactive plot
+    uiOutput("AppDescription")
       )
     )
   )
@@ -53,6 +54,15 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   # Update competitions based on selected year
+    output$AppDescription <- renderUI({
+      HTML("This project is designed solely for educational and learning purposes. 
+      Data utilized in this app is sourced from <a href='https://fbref.com/en/' target='_blank'>FB Ref</a>. 
+      The concept of playstyle wheels is inspired by 
+      <a href='https://theathletic.com/5263617/2024/02/13/playstyle-wheels-europe-team-style/' target='_blank'>The Athletic</a>. 
+      This application has no commercial intent and is not meant for commercial use.
+
+")
+    })
   observeEvent(input$Year, {
     competitions <- unique(d_full$Competition_Name[d_full$Season_End_Year == input$Year])
     updateSelectInput(session, "Competition",
@@ -100,7 +110,7 @@ server <- function(input, output, session) {
                                   'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                                   'Patient Attack', 'Shot Quality')) +
       scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 15),
+      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 13),
             panel.background = element_blank(),
             axis.ticks = element_blank(),  
             axis.text.y = element_blank(),
@@ -129,7 +139,7 @@ server <- function(input, output, session) {
                                   'Possession', 'Central Progression','Circulation', 'Field Tilt','Chance Creation', 
                                   'Patient Attack', 'Shot Quality')) +
       scale_fill_manual(values = c("#007D8C", "#FF6F61", "#FFD662", "#708090")) +
-      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 15),
+      theme(text = element_text(family = "Source Sans Pro", face = 'bold', size = 13),
             panel.background = element_blank(),
             axis.ticks = element_blank(),  
             axis.text.y = element_blank(),
@@ -143,5 +153,5 @@ server <- function(input, output, session) {
 
 shinyApp(ui = ui, server = server)
 
-rsconnect::deployApp()
+#rsconnect::deployApp()
 
