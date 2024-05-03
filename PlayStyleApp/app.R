@@ -55,13 +55,13 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   # Update competitions based on selected year
     output$AppDescription <- renderUI({
-      HTML("This project is designed solely for educational and learning purposes. 
+      HTML("The metrics are percentile compared to other teams from all available leagues in that season 
+      (England, Germany, France, Spain, Italy, Netherlands, Belgium, Portugal, Brazil, Argentina, USA, Mexico).
+      This project is designed solely for educational and learning purposes. 
       Data utilized in this app is sourced from <a href='https://fbref.com/en/' target='_blank'>FB Ref</a>. 
       The concept of playstyle wheels is inspired by 
       <a href='https://theathletic.com/5263617/2024/02/13/playstyle-wheels-europe-team-style/' target='_blank'>The Athletic</a>. 
-      This application has no commercial intent and is not meant for commercial use.
-
-")
+      This application has no commercial intent and is not meant for commercial use. ")
     })
   observeEvent(input$Year, {
     competitions <- unique(d_full$Competition_Name[d_full$Season_End_Year == input$Year])
