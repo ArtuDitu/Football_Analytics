@@ -6,7 +6,10 @@ library(shiny)
 library(geomtextpath)
 
 # leagues of interest
-list_of_leagues <- c("ITA", "ENG", "FRA", "GER", "ESP", "POR", "NED")
+list_of_leagues <- c('ENG', 'ITA', 'NED', 'SPA', 'POR', 'GER', 'FRA')
+
+# 2. no scandinavian data
+# 3. no Russia, Turkey, Ukraine, Switzerland, data
 
 ## function to get the data for 7 leagues in one season and calculate all the metrics
 
@@ -247,7 +250,7 @@ d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Pr
 return(d_playstale_long)
 }
 
-seasons_to_extract <- 2019:2024
+seasons_to_extract <- 2024
 d_full <- data.frame()
 
 for (season in seasons_to_extract){
