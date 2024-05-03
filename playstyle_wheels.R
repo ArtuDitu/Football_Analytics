@@ -6,7 +6,7 @@ library(shiny)
 library(geomtextpath)
 
 # leagues of interest
-list_of_leagues <- c('ENG', 'ITA', 'NED', 'SPA', 'POR', 'GER', 'FRA')
+list_of_leagues <- c('ENG', 'ITA', 'NED', 'SPA', 'POR', 'GER', 'FRA','BRA','ARG', 'BEL', 'MEX', 'USA')
 
 # 2. no scandinavian data
 # 3. no Russia, Turkey, Ukraine, Switzerland, data
@@ -14,7 +14,7 @@ list_of_leagues <- c('ENG', 'ITA', 'NED', 'SPA', 'POR', 'GER', 'FRA')
 ## function to get the data for 7 leagues in one season and calculate all the metrics
 
 
-get_7leagues <- function(season, list_of_leagues){
+get_leagues <- function(season, list_of_leagues){
 
 # standard stats
 d <- fb_season_team_stats(country = list_of_leagues, 
@@ -250,11 +250,11 @@ d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Pr
 return(d_playstale_long)
 }
 
-seasons_to_extract <- 2024
+seasons_to_extract <- 2019:2024
 d_full <- data.frame()
 
 for (season in seasons_to_extract){
-  d_tmp <- get_7leagues(season, list_of_leagues)
+  d_tmp <- get_leagues(season, list_of_leagues)
   d_full<-rbind(d_full, d_tmp)
 }
 
@@ -289,7 +289,7 @@ plot_playstyle_wheel
 
 
 #save the data to csv
-#write_csv(d_full, 'data_playstyle_wheel.csv')
+write_csv(d_full, 'data_playstyle_wheel.csv')
 
 
 
