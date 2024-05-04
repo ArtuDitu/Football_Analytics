@@ -103,3 +103,4 @@ g.set(yticks=[], xticks=[], xlabel=None, ylabel=None)
 g.despine(left=True, bottom=True)
 for ax in g.fig.axes:
     ax.imshow(map_img, zorder=0, extent=[0, 120, 0, 75])
+
