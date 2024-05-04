@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from os import path
 
 pd.options.mode.chained_assignment = None
-%matplotlib qt
+#matplotlib qt
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 # load data
 dfs = pd.read_csv(path.join(DATA_DIR, 'shots.csv'))
@@ -38,7 +38,7 @@ g.set(yticks=[], xticks=[], xlabel=None, ylabel=None)
 g.despine(left=True, bottom=True)
 
 import matplotlib.image as mpimg
-map_img = mpimg.imread('./fig/soccer_field.png')
+map_img = mpimg.imread(path.join(DATA_DIR, 'soccer_field.png'))
 
 # scatter plot with field overlay
 g = sns.relplot(data=dfs, x='x', y='y', kind='scatter', size=5)

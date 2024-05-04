@@ -7,19 +7,19 @@ from os import path
 import matplotlib.image as mpimg
 
 pd.options.mode.chained_assignment = None
-%matplotlib qt
+#matplotlib qt
 
 # change this to the directory where the csv files that come with the book are
 # stored
 # on Windows it might be something like 'C:/mydir'
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 FIG_DIR = './figures'
 
-dftm = dfpm.groupby(['match_id', 'team']).agg(
-    total_shot=('shot', 'sum'),
-    total_pass=('pass', 'sum'),
-    total_goal=('goal', 'sum'))
+# dftm = dfpm.groupby(['match_id', 'team']).agg(
+#     total_shot=('shot', 'sum'),
+#     total_pass=('pass', 'sum'),
+#     total_goal=('goal', 'sum'))
 
 ###############
 # distributions
@@ -60,7 +60,8 @@ dfpm['shot'].value_counts(normalize=True).sort_index().head(10)
 ##########
 
 # basic displot - all on one line
-g = (sns.FacetGrid(dfpm).map(sns.kdeplot, 'pass', shade=True))
+g = (sns.FacetGrid(dfpm)
+     .map(sns.kdeplot, 'pass', shade=True))
 g.set(xlim=(-5, 120))
 plt.show()
 
