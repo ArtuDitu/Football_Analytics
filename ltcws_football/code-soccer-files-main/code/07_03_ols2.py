@@ -4,7 +4,7 @@ import math
 import statsmodels.formula.api as smf
 from os import path
 
-DATA_DIR = './data'
+DATA_DIR = '/Users/artur/Dropbox/Football/Football_Analytics/ltcws_football/code-soccer-files-main/data/'
 
 dfs = pd.read_csv(path.join(DATA_DIR, 'shots.csv'))
 dfp = pd.read_csv(path.join(DATA_DIR, 'players.csv'))
