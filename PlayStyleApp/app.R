@@ -5,7 +5,7 @@ library(shiny)
 library(geomtextpath)
 
 # load data
-d_full <- read_csv('data_playstyle_wheel.csv')
+d_full <- read_csv('data/data_playstyle_wheel.csv')
 # order factors for the plots
 d_full$Metric <- factor(d_full$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
                                                   'Deep_buildup', 'Press_Resistance', 'Possession',
