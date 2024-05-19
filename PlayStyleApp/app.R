@@ -63,7 +63,7 @@ ui <- fluidPage(
     div(style = "margin-top: 20px;"),
     plotOutput("myPlot2", height = "75vh"), # Output: Display interactive plot
     div(style = "margin-top: 20px;"),
-    plotOutput("myPlot3", height = "150vh", width = "150vh" ),
+    plotOutput("myPlot3", height = "150vh", width = "200vh" ),
     div(style = "margin-top: 20px;"),
     uiOutput("AppDescription")
       )
@@ -193,7 +193,7 @@ server <- function(input, output, session) {
         strip.background = element_blank(),     # Remove the gray box around facet titles
         strip.text = element_text(size = 16, face = "bold"), # Customize facet title text
         plot.title = element_text(hjust = 0.5, size = 30),
-        axis.text.x = element_text(size = 11),
+        axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 16),
         axis.title.y = element_text(size = 26),
         axis.title.x = element_text(size = 22),
