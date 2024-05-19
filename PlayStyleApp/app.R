@@ -6,6 +6,23 @@ library(geomtextpath)
 
 # load data
 d_full <- read_csv('data/data_playstyle_wheel.csv')
+d_full[d_full$Squad == 'Arsenal' & d_full$Country == 'ARG',]$Squad <- 'Arsenal (ARG)'
+
+
+# Create a named vector for custom labels
+custom_labels <- c('Chance_Prevention' = 'Chance Prevention',
+                   'Intensity' = 'Intensity',
+                   'High_Line' = 'High Line',
+                   'Deep_buildup' = 'Deep buildup',
+                   'Press_Resistance' = 'Press Resistance', 
+                   'Possession' = 'Possession',
+                   'Central_Progression' = 'Central Progression',
+                   'Circulation' = 'Circulation', 
+                   'Field_Tilt' = 'Field Tilt',
+                   'Chance_Creation' = 'Chance Creation',
+                   'Patient_Attack' = 'Patient Attack',
+                   'Shot_Quality' = 'Shot Quality')
+
 # order factors for the plots
 d_full$Metric <- factor(d_full$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
                                                   'Deep_buildup', 'Press_Resistance', 'Possession',
@@ -45,6 +62,9 @@ ui <- fluidPage(
       plotOutput("myPlot", height = "75vh"),
     div(style = "margin-top: 20px;"),
     plotOutput("myPlot2", height = "75vh"), # Output: Display interactive plot
+    div(style = "margin-top: 20px;"),
+    plotOutput("myPlot3", height = "150vh", width = "150vh" ),
+    div(style = "margin-top: 20px;"),
     uiOutput("AppDescription")
       )
     )
@@ -95,7 +115,7 @@ server <- function(input, output, session) {
   
   output$myPlot <- renderPlot({
     req(input$Year, input$Competition, input$Team)
-    team_to_plot <- d_full[d_full$Squad == input$Team & d_full$Season_End_Year == input$Year,]
+    team_to_plot <- d_full[d_full$Squad == input$Team & d_full$Season_End_Year == input$Year & d_full$Competition_Name == input$Competition,]
     # Assuming you're using ggplot for plotting
     ggplot(team_to_plot) +
       # Make custom panel grid
@@ -124,7 +144,7 @@ server <- function(input, output, session) {
   
   output$myPlot2 <- renderPlot({
     req(input$Year2, input$Competition2, input$Team2)
-    team_to_plot <- d_full[d_full$Squad == input$Team2 & d_full$Season_End_Year == input$Year2,]
+    team_to_plot <- d_full[d_full$Squad == input$Team2 & d_full$Season_End_Year == input$Year2 & d_full$Competition_Name == input$Competition2,]
     # Assuming you're using ggplot for plotting
     ggplot(team_to_plot) +
       # Make custom panel grid
@@ -148,6 +168,45 @@ server <- function(input, output, session) {
             plot.title = element_text(hjust = 0.5),
             legend.position = "none")
   },width = "auto", height = "auto")
+  
+  output$myPlot3 <- renderPlot({
+    req(input$Year, input$Competition, input$Team, input$Year2, input$Competition2, input$Team2)
+    team1_to_plot <- d_full[d_full$Squad == input$Team & d_full$Competition_Name == input$Competition, ]
+    team2_to_plot <- d_full[d_full$Squad == input$Team2 & d_full$Competition_Name == input$Competition2, ]
+    teams_to_plot <- rbind(team1_to_plot, team2_to_plot)
+    # Assuming you're using ggplot for plotting
+    ggplot(teams_to_plot, aes(x = Season_End_Year, y = Value, group = Squad)) +
+      geom_point(aes(color = Squad), size = 2) +
+      geom_line(aes(color = Squad), size = 1) +
+      facet_wrap(~ Metric, ncol = 3, nrow = 4, scales = 'free_x', labeller = as_labeller(custom_labels)) +
+      theme_bw() +
+      scale_y_continuous(breaks = seq(0,100,20)) +
+      scale_color_manual(values = c('#2ca02c','#9467bd')) +
+      theme(
+        text = element_text(family = "Source Sans Pro", face = 'bold'),
+        panel.grid.major = element_blank(),    # Remove major grid lines
+        panel.grid.minor = element_blank(),    # Remove minor grid lines
+        panel.background = element_rect(fill = "white"),  # Ensure background is white
+        panel.border = element_blank(),
+        panel.grid.major.y = element_line(color = "grey", size = 0.5), # Add major y grid lines
+        panel.grid.major.x = element_blank(), # Remove major x grid lines
+        strip.background = element_blank(),     # Remove the gray box around facet titles
+        strip.text = element_text(size = 16, face = "bold"), # Customize facet title text
+        plot.title = element_text(hjust = 0.5, size = 30),
+        axis.text.x = element_text(size = 11),
+        axis.text.y = element_text(size = 16),
+        axis.title.y = element_text(size = 26),
+        axis.title.x = element_text(size = 22),
+        axis.ticks.x = element_line(),
+        legend.text = element_text(size = 14),   # Increase legend text size
+        legend.title = element_text(size = 16) ,  # Increase legend title size
+        panel.spacing = unit(1, "cm")
+      ) +
+      labs(title = "Metrics Over Seasons",
+           x = "Season",
+           y = "Value")
+
+  }, width = "auto", height = "auto")
 }
 
 
