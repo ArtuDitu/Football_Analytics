@@ -4,6 +4,8 @@ library(tidyverse)
 library(extrafont)
 library(shiny)
 library(geomtextpath)
+library(readr)
+
 
 # leagues of interest
 list_of_leagues <- c('ENG', 'ITA', 'NED', 'SPA', 'POR', 'GER', 'FRA','BRA','ARG', 'BEL', 'MEX', 'USA')
@@ -291,5 +293,49 @@ plot_playstyle_wheel
 #save the data to csv
 write_csv(d_full, 'data_playstyle_wheel.csv')
 
+### make point-line plots for each metric over all available seasons
+data_playstyle_wheel <- read_csv("data/data_playstyle_wheel.csv")
 
+# # change to wide
+# d_full <- data_playstyle_wheel %>%
+#   select(-Category) %>%
+#   pivot_wider( names_from = Metric, values_from = Value)
+
+### radar plot with ggplot2 - example
+
+
+
+# order factors for the plots
+data_playstyle_wheel$Metric <- factor(data_playstyle_wheel$Metric, levels = c('Chance_Prevention','Intensity', 'High_Line',
+                                                  'Deep_buildup', 'Press_Resistance', 'Possession',
+                                                  'Central_Progression','Circulation', 'Field_Tilt',
+                                                  'Chance_Creation', 'Patient_Attack', 'Shot_Quality'))
+
+team_to_plot <- data_playstyle_wheel[data_playstyle_wheel$Squad == 'Brighton' ,]
+
+plot_playstyle_wheel_over_seasons <- ggplot(team_to_plot) +
+  geom_point(aes(x = Season_End_Year, y = Value, group = Metric)) +
+  geom_line(aes(x = Season_End_Year, y = Value, group = Metric)) +
+  facet_wrap(~ Metric, ncol = 3, nrow = 4) +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0,100,20)) +
+  theme(
+    text = element_text(family = "Source Sans Pro", face = 'bold'),
+    panel.grid.major = element_blank(),    # Remove major grid lines
+    panel.grid.minor = element_blank(),    # Remove minor grid lines
+    panel.background = element_rect(fill = "white"),  # Ensure background is white
+    panel.border = element_blank(),
+    panel.grid.major.y = element_line(color = "grey", size = 0.5), # Add major y grid lines
+    panel.grid.major.x = element_blank(), # Remove major x grid lines
+    strip.background = element_blank(),     # Remove the gray box around facet titles
+    strip.text = element_text(size = 12, face = "bold"), # Customize facet title text
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.ticks.x = element_line()
+  ) +
+  labs(title = "Metrics Over Seasons",
+       x = "Season",
+       y = "Value")
+plot_playstyle_wheel_over_seasons
 
