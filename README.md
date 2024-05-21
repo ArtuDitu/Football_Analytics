@@ -14,7 +14,7 @@ The Athletic published their updated playstyle wheels (<https://theathletic.com/
 
     library(wordlfootballR)\
     library(tidyverse)\
-    library(readr)\
+    library(readr)
 
 2.  Preprocess the data It has to be organized in the shape that will allow plotting. New variables have to calculated and summarized.
 
@@ -37,4 +37,8 @@ The Athletic published their updated playstyle wheels (<https://theathletic.com/
 
 6.  Extend the app by displaying metrics over seasons
 
-Steps 1-4 are in the script playstyle_wheels.R and step 5 is in the folder PlayStyleApp.\
+    library(rshiny)\
+    library(ggplot)\
+    library(tidyverse)
+
+Steps 1-4 are in the script playstyle_wheels.R and steps 5 and6 are in the folder PlayStyleApp.\
