@@ -41,4 +41,4 @@ The Athletic published their updated playstyle wheels (<https://theathletic.com/
     library(ggplot)\
     library(tidyverse)
 
-Steps 1-4 are in the script playstyle_wheels.R and steps 5 and6 are in the folder PlayStyleApp.\
+Steps 1-4 are in the script playstyle_wheels.R and steps 5 and 6 are in the folder PlayStyleApp.\
