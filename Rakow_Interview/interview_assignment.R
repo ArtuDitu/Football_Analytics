@@ -146,3 +146,5 @@ goal_differences <- calculate_xG_difference(goals, xG)
 
 # Print the results
 print(goal_differences)
+
+
