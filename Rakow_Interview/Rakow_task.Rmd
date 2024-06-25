@@ -1,0 +1,283 @@
+---
+title: "Data Analyst position at Raków Częstochowa - Task"
+author: "Dr. Artur Czeszumski"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    theme: cerulean
+    highlight: tango
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, results = 'hide')
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(ggsoccer)
+  # Add other libraries as needed
+})
+```
+
+W tym dokumencie przedstawiam odpowiedzi na pytania zwiazane z aplikacja na pozycje analityka danych w zespole Raków Częstochowa. Ten dokument zawiera kod, wizualizacje i odpowiedzi na pytania. Komentarze do kodu są w języku angielskim.
+
+```{r, warning=FALSE}
+# Load required libraries
+library(jsonlite)
+library(tidyverse)
+library(knitr)
+library(ggsoccer)
+
+# Read the JSON files. Please remember to keep this file in the same folder as the data shared for the assignment. 
+d_match_stats <- stream_in(file('player_match_stats_match_3891414.json'))
+d_events <- stream_in(file('events_match_3891414.json'))
+d_lineup <- stream_in(file('lineups_match_3891414.json'))
+```
+
+# Pytanie 1:
+
+Oblicz różnicę xG (expected goals) dla każdego stanu meczu (wygrana-przegrana-remis) dla obu drużyn.
+
+```{r, results = 'asis'}
+# Filter events with xG values (shots)
+shots_xg <- !is.na(d_events$shot$statsbomb_xg)
+
+# Create a dataframe with xG values, outcomes, teams, and minutes of each shot
+xG <- data.frame(d_events[shots_xg,]$shot$statsbomb_xg, 
+                 d_events[shots_xg,]$shot$outcome$name,
+                 d_events[shots_xg,]$possession_team$name,
+                 d_events[shots_xg,]$minute)
+# change column names for more readable
+colnames(xG) <- c('xG', 'Outcome', 'Team', 'Minute') 
+# create a variable that keeps both team names
+teams <- unique(xG$Team)
+# Add initial row with minute 0 and accumulated xG of 0 for each team
+initial_rows <- data.frame(
+  xG = 0,
+  Outcome = NA,
+  Team = teams,
+  Minute = 0
+)
+# combine empty row with the data frame
+xG <- rbind(initial_rows, xG)
+
+# Convert Team to a factor and reverse the levels
+xG$Team <- factor(xG$Team)
+xG$Team <- factor(xG$Team, levels = rev(levels(xG$Team)))
+
+# Calculate accumulated xG for each team over time
+xG <- xG %>%
+  arrange(Team, Minute) %>%
+  group_by(Team) %>%
+  mutate(accumulated_xG = cumsum(xG))
+
+# Find the maximum minute in the match
+max_minute <- max(xG$Minute)
+
+# Add final row with maximum minute for each team
+final_rows <- xG %>%
+  group_by(Team) %>%
+  summarize(Minute = max_minute, accumulated_xG = last(accumulated_xG), .groups = 'drop') %>%
+  mutate(xG = 0, Outcome = NA)
+xG <- rbind(xG, final_rows)
+
+# Filter data for goals
+goals <- xG %>%
+  filter(Outcome == "Goal")
+
+# Calculate the score for each team
+score <- goals %>%
+  group_by(Team) %>%
+  summarise(Goals = n()) %>%
+  ungroup()
+
+# Ensure both teams are in the score data frame
+score <- complete(score, Team, fill = list(Goals = 0))
+
+# Create a label for the game score
+game_score_label <- paste(score$Team[1], score$Goals[1], "-", score$Goals[2], score$Team[2])
+
+# Plot accumulated xG over time for each team using step lines
+ggplot(xG, aes(x = Minute, y = accumulated_xG, color = Team, group = Team)) +
+  geom_step(size = 1.5) +  # Draw step lines to show the progression of accumulated xG over time
+  geom_point(data = goals, aes(x = Minute, y = accumulated_xG, fill = Team), size = 3, shape = 21) +  # Add points for goals, using a filled circle
+  geom_text(data = goals, aes(x = Minute, y = accumulated_xG, 
+                              label = paste0("xG: ", sprintf("%.2f", xG))), 
+            vjust = -1, hjust = 0.85, size = 4, color = "black") +  # Annotate goals with their xG values, positioned above the points
+  geom_text(data = final_rows, aes(x = Minute, y = accumulated_xG, 
+                                   label = sprintf("%.2f", accumulated_xG), color = Team), 
+            hjust = -0.3, size = 6, show.legend = FALSE) +  # Annotate the final accumulated xG values for each team, positioned slightly to the right of the last point
+  labs(title = game_score_label,  # Set the title of the plot
+       x = "Minuta",  # Label for the x-axis
+       y = "xG") +  # Label for the y-axis
+  scale_y_continuous(breaks = seq(0, max(xG$accumulated_xG) * 1.2, by = 0.25)) +  # Set y-axis breaks every 0.25 units, extending 20% beyond the max value
+  scale_x_continuous(breaks = seq(0, max(xG$Minute), by = 15)) +  # Set x-axis breaks every 15 minutes
+  scale_color_brewer(palette = "Set1") +  # Apply a color palette from ColorBrewer to the lines and points
+  scale_fill_brewer(palette = "Set1") +   # Ensure the fill color for points matches the line color
+  coord_cartesian(clip = 'off') +  # Ensure text annotations are not clipped by the plot area
+  theme_minimal() +  # Use a minimal theme for a clean look
+  theme(legend.title = element_blank(),  # Remove the legend title
+        legend.position = "right",  # Position the legend on the right side of the plot
+        legend.text = element_text(size = 14),  # Increase the legend text size
+        legend.key.size = unit(1.5, "lines"),   # Increase the size of the legend keys
+        title = element_text(size = 14),  # Set the title text size
+        plot.margin = unit(c(1, 2, 1, 1), "lines"))  # Adjust the plot margins
+
+### Calculate the difference between xG for each score change
+
+
+# Function to calculate xG difference at the time of each goal
+calculate_xG_difference <- function(goals, xG) {
+  results <- data.frame()
+  
+  for (i in 1:nrow(goals)) {
+    goal_event <- goals[i, ]
+    goal_minute <- goal_event$Minute
+    scoring_team <- goal_event$Team
+    
+    # Get the state of the game at the goal minute for both teams
+    game_state <- xG %>%
+      filter(Minute <= goal_minute) %>%
+      group_by(Team) %>%
+      summarise(accumulated_xG = last(accumulated_xG)) %>%
+      ungroup()
+    
+    # Count the goals up to the goal minute for both teams
+    goal_state <- goals %>%
+      filter(Minute <= goal_minute) %>%
+      group_by(Team) %>%
+      summarise(goals_scored = n()) %>%
+      ungroup()
+    
+    # Ensure both teams are included in the game state
+    if (nrow(game_state) == 2) {
+      team1 <- game_state$Team[1]
+      team2 <- game_state$Team[2]
+      xg_team1 <- game_state$accumulated_xG[1]
+      xg_team2 <- game_state$accumulated_xG[2]
+      
+      goals_team1 <- ifelse(team1 %in% goal_state$Team, goal_state$goals_scored[goal_state$Team == team1], 0)
+      goals_team2 <- ifelse(team2 %in% goal_state$Team, goal_state$goals_scored[goal_state$Team == team2], 0)
+      
+      difference <- abs(xg_team1 - xg_team2)
+      
+      # Determine the state of the game for each team based on goals
+      if (goals_team1 == goals_team2) {
+        state_team1 <- "tie"
+        state_team2 <- "tie"
+      } else {
+        state_team1 <- if (goals_team1 > goals_team2) "win" else "lose"
+        state_team2 <- if (goals_team2 > goals_team1) "win" else "lose"
+      }
+      
+      result_row <- data.frame(
+        Minute = goal_minute,
+        Team1 = team1,
+        Team2 = team2,
+        accumulated_xG_Team1 = xg_team1,
+        accumulated_xG_Team2 = xg_team2,
+        goals_Team1 = goals_team1,
+        goals_Team2 = goals_team2,
+        xG_difference = difference,
+        state_Team1 = state_team1,
+        state_Team2 = state_team2
+      )
+      
+      results <- rbind(results, result_row)
+    }
+  }
+  
+  # Order the results by minute
+  results <- results %>%
+    arrange(Minute)
+  
+  return(results)
+}
+
+# Calculate the xG differences for goals
+goal_differences <- calculate_xG_difference(goals, xG)
+
+# remove unnessary columns
+goal_differences <- goal_differences %>%
+  select(Team1, Team2, xG_difference, state_Team1, state_Team2)
+
+# Print the results
+kable(goal_differences)
+
+
+
+```
+
+## Odpowiedź:
+
+W odpowiedzi na to pytanie przygotowałem wizualizację pokazującą zmiany xG dla obu drużyn po każdym oddanym strzale. Wszystkie gole są oznaczone z opisem wartości xG, a zaakumulowany xG dla obu drużyn jest przedstawiony. Dodatkowo policzyłem różnicę między zdobytym i straconym xG dla każdego stanu meczu (wygrana-przegrana-remis) i przedstawiłem wszystkie wartości w tabeli.
+
+Raków przegrana: -0.83\
+Raków remis: -0.48\
+Raków wygrana: 0.33\
+Raków wygrana: 0.5
+
+Piast wygrana: 0.83\
+Piast remis: 0.48\
+Piast przegrana: -0.33\
+Piast przegrana: -0.5
+
+# Pytanie 2:
+
+Policz liczbę podań z półprzestrzeni do pola karnego dla obu drużyn.
+
+```{r}
+# define half spaces and penalty area
+penalty_x <- 102
+penalty_y_min <- 18
+penalty_y_max <- 62
+
+# divide y (width) by 5 spaces (left, left half-space, middle, right half-space, right)
+left_half_spaces_y_min <- 16
+left_half_spaces_y_max <- 32
+right_half_spaces_y_min <- 48
+right_half_spaces_y_max <- 64
+
+# select data
+passes <- data.frame(d_events[d_events$type$id == 30,]$possession_team$name,
+                     map_dbl(d_events[d_events$type$id == 30,]$location, 1),
+                     map_dbl(d_events[d_events$type$id == 30,]$location, 2),
+                     map_dbl(d_events[d_events$type$id == 30,]$pass$end_location, 1),
+                     map_dbl(d_events[d_events$type$id == 30,]$pass$end_location, 2),
+                     d_events[d_events$type$id == 30,]$pass$outcome$name)
+colnames(passes) <- c('Team', 'pass_start_x', 'pass_start_y', 'pass_end_x', 'pass_end_y', 'pass_outcome')
+
+# get passes from half spaces to the penalty box for each team
+passes_half_spaces <- passes %>%
+  filter(pass_start_x < penalty_x,
+    (pass_start_y > left_half_spaces_y_min & pass_start_y < left_half_spaces_y_max) | 
+           (pass_start_y > right_half_spaces_y_min & pass_start_y < right_half_spaces_y_max),
+         pass_end_x > penalty_x & pass_end_x < 120,
+         pass_end_y > penalty_y_min & pass_end_y < penalty_y_max)
+
+teams <- unique(passes$Team)
+
+nrow(passes_half_spaces[passes_half_spaces$Team == teams[1],])
+nrow(passes_half_spaces[passes_half_spaces$Team == teams[2],])
+
+# Convert Team to a factor and reverse the levels
+passes_half_spaces$Team <- factor(passes_half_spaces$Team)
+passes_half_spaces$Team <- factor(passes_half_spaces$Team, levels = rev(levels(passes_half_spaces$Team)))
+
+# make a pitch to plot passes
+ggplot(passes_half_spaces) +
+  annotate_pitch(dimensions = pitch_statsbomb) +
+  geom_segment(aes(x = pass_start_x, y = pass_start_y, xend = pass_end_x, yend = pass_end_y, colour = Team),
+               arrow = arrow(length = unit(0.25, "cm"),
+                             type = "closed")) +
+  scale_color_brewer(palette = "Set1") +
+  theme_pitch() +
+  labs(title = 'Podania z półprzestrzeni do pola karnego')
+
+```
+
+## Odpowiedź:
+
+By zdefiniować półprzestrzenie podzieliłem szerokość boiska na pięć części i wybrałem dwie pomiedzy prawą i środkową, lewa i środkową. Co więcej półprzestrzenia konczą sie na wysokości lini pola karnego.
