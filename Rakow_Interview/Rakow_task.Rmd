@@ -13,11 +13,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, results = 'hide')
-suppressPackageStartupMessages({
-  library(dplyr)
-  library(ggplot2)
-  # Add other libraries as needed
-})
 ```
 
 W tym dokumencie przedstawiam odpowiedzi na pytania zwiazane z aplikacja na pozycje analityka danych w zespole Raków Częstochowa. Ten dokument zawiera kod, wizualizacje i odpowiedzi na pytania. Komentarze do kodu są w języku angielskim.
@@ -29,7 +24,8 @@ library(tidyverse)
 library(knitr)
 library(ggsoccer)
 
-# Read the JSON files. Please remember to keep this file in the same folder as the data shared for the assignment. 
+# Read JSON files. 
+#Please remember to keep this file in the same folder as the data shared for the assignment. 
 d_match_stats <- stream_in(file('player_match_stats_match_3891414.json'))
 d_events <- stream_in(file('events_match_3891414.json'))
 d_lineup <- stream_in(file('lineups_match_3891414.json'))
@@ -100,7 +96,7 @@ game_score_label <- paste(score$Team[1], score$Goals[1], "-", score$Goals[2], sc
 
 # Plot accumulated xG over time for each team using step lines
 ggplot(xG, aes(x = Minute, y = accumulated_xG, color = Team, group = Team)) +
-  geom_step(size = 1.5) +  # Draw step lines to show the progression of accumulated xG over time
+  geom_step(linewidth = 1.5) +  # Draw step lines to show the progression of accumulated xG over time
   geom_point(data = goals, aes(x = Minute, y = accumulated_xG, fill = Team), size = 3, shape = 21) +  # Add points for goals, using a filled circle
   geom_text(data = goals, aes(x = Minute, y = accumulated_xG, 
                               label = paste0("xG: ", sprintf("%.2f", xG))), 
@@ -258,8 +254,9 @@ passes_half_spaces <- passes %>%
 
 teams <- unique(passes$Team)
 
-nrow(passes_half_spaces[passes_half_spaces$Team == teams[1],])
-nrow(passes_half_spaces[passes_half_spaces$Team == teams[2],])
+# get the number of passes for each team
+#nrow(passes_half_spaces[passes_half_spaces$Team == teams[1],])
+#nrow(passes_half_spaces[passes_half_spaces$Team == teams[2],])
 
 # Convert Team to a factor and reverse the levels
 passes_half_spaces$Team <- factor(passes_half_spaces$Team)
@@ -274,9 +271,71 @@ ggplot(passes_half_spaces) +
   scale_color_brewer(palette = "Set1") +
   theme_pitch() +
   labs(title = 'Podania z półprzestrzeni do pola karnego')
+```
+
+## Odpowiedź:
+
+Aby zdefiniować półprzestrzenie, podzieliłem szerokość boiska na pięć części i wybrałem dwie pomiędzy prawą a środkową oraz lewą a środkową. Co więcej, półprzestrzenie kończą się na wysokości linii pola karnego. W tym meczu Raków miał 10 podań z półprzestrzeni do pola karnego, a Piast miał tylko jedno. Wszystkie podania są pokazane na grafice.
+
+# Pytanie 3:
+
+Jaki jest wzrost najniższego zawodnika, który oddał strzał głową po stałym fragmencie gry?
+
+```{r}
+# get the data for head shots and type of play patterns
+shots <- data.frame(d_events[which(d_events$shot$body_part$id == 37), ]$play_pattern$id,
+                    d_events[which(d_events$shot$body_part$id == 37), ]$player$name)
+# change column names
+colnames(shots) <- c('Play_Pattern', 'Name')
+
+# select only headers from set pieces 
+shots <- shots %>%
+  filter(Play_Pattern %in% c(2,3,4,7,9))
+
+# organize lineups for both teams
+lineups1 <- data.frame(d_lineup$lineup[1]) %>%
+  select(player_name, player_height)
+lineups2 <- data.frame(d_lineup$lineup[2])  %>%
+  select(player_name, player_height)
+lineups <- rbind(lineups1, lineups2)
+
+# combine data frames with headers and lineups
+result <- shots %>%
+  inner_join(lineups, by = c("Name" = "player_name")) %>%
+  arrange(player_height) # arrange it from smallest
+
+# print names of players with lowest height
+print(result[result$player_height == min(result$player_height),]$Name)
 
 ```
 
 ## Odpowiedź:
 
-By zdefiniować półprzestrzenie podzieliłem szerokość boiska na pięć części i wybrałem dwie pomiedzy prawą i środkową, lewa i środkową. Co więcej półprzestrzenia konczą sie na wysokości lini pola karnego.
+W tym meczu było dwóch piłkarzy, którzy oddali strzały głową i są tego samego wzrostu (najniżsi z wszystkich, którzy oddali strzały głową po stałym fragmencie gry):
+
+	•	Jakub Czerwiński - 183
+	•	Efstratios Svarnas - 183
+
+# Pytanie 4:
+
+Jak zautomatyzowałbyś raport z odpowiedziami na powyższe pytania? (nie musisz tego robić, wystarczy opisanie procesu i narzędzi)
+
+## Odpowiedź:
+
+Kod napisany w odpowiedziach pozwala odpowiedzieć na te pytania w każdym innym meczu, który mógłby być wyciągnięty z StatsBomb API. To znaczy, ten dokument HTML albo PDF może być generowany automatycznie i dostarczany członkom sztabu oraz każdej innej zainteresowanej osobie. To znaczy kod by się komunikował z StatsBomb API, tworzył grafiki i odpowiedzi, które by były przedstawione w PDF albo HTML. Jak w tym przykładzie, użyłbym R i R markdown do tworzenia tych dokumentów. Co więcej, aby zautomatyzować proces i umożliwić interakcję z danymi, z łatwością mógłbym stworzyć małą aplikację (R Shiny), która komunikowałaby się z StatsBomb API i generowała raporty na każdy wybrany mecz przez użytkownika. Jako przykład chciałbym pokazać aplikację, którą stworzyłem, aby porównać style gry między zespołami w różnych sezonach: <https://arturczeszumski.shinyapps.io/playstyleapp/>
+
+# Pytanie 5:
+
+⁠Jakie trzy metryki zespołowe (z tych oferowanych przez Statsbomb) uznałbyś za niezbędne w raporcie pomeczowym? Krótko opisz dlaczego?
+
+## Odpowiedź:
+
+1. Expected Goals (xG): Ta metryka ocenia jakość oddanych strzałów przez drużynę, biorąc pod uwagę różne czynniki, takie jak odległość do bramki, kąt strzału oraz rodzaj akcji prowadzącej do strzału. xG pozwala lepiej zrozumieć, czy drużyna tworzy wartościowe sytuacje strzeleckie, co jest kluczowe dla oceny efektywności ofensywy.
+
+2. Pressures: Metryka ta mierzy liczbę sytuacji, w których zawodnicy drużyny wywierają presję na przeciwników posiadających piłkę. Wysoki poziom presji może świadczyć o agresywnej grze defensywnej i skuteczności w odbiorze piłki. Jest to ważne dla oceny, jak dobrze drużyna radzi sobie w obronie oraz jak efektywnie odzyskuje piłkę.
+
+3. On-Ball Value (OBV): Metryka ta ocenia wartość, jaką każde zagranie piłki (podanie, drybling, strzał itp.) dodaje do potencjalnej zdolności drużyny do zdobycia bramki lub zapobieżenia stracie bramki. OBV jest zaawansowaną metryką analityczną, która pozwala na bardziej szczegółową ocenę wkładu poszczególnych zawodników w grę zespołu. Dzięki OBV można zidentyfikować, które zagrania mają największy wpływ na przebieg meczu, zarówno w ataku, jak i w obronie.
+
+Dodatkowo uważam, że metryka PPDA jest bardzo ważna i można ją łatwo wyliczyć z danych StatsBomb.
+
+PPDA (Passes Per Defensive Action): PPDA mierzy liczbę podań przeciwnika, jakie drużyna pozwala wykonać, zanim podejmie akcję defensywną (np. odbiór, przechwyt, faul). Niższa wartość PPDA oznacza bardziej intensywną presję. Ta metryka jest kluczowa dla oceny, jak agresywnie drużyna naciska na przeciwnika, co może być wskaźnikiem jej defensywnej strategii i skuteczności w odbiorze piłki. PPDA oblicza się, dzieląc liczbę podań przeciwnika przez liczbę akcji defensywnych drużyny w określonej strefie boiska.
