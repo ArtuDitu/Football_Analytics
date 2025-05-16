@@ -252,7 +252,7 @@ d_playstale_long$Metric <- factor(d_playstale_long$Metric, levels = c('Chance_Pr
 return(d_playstale_long)
 }
 
-seasons_to_extract <- 2019:2024
+seasons_to_extract <- 2019:2025
 d_full <- data.frame()
 
 for (season in seasons_to_extract){
